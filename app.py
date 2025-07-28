@@ -72,7 +72,8 @@ def calculate_recipe_cost(recipe_id):
     ingredients = db.execute('''
         SELECT i.name, ri.amount_needed, ri.unit_needed
         FROM recipe_ingredients ri
-        JOIN ingredients i ON ri.ingredient_id = i.id
+        -- Also fetch the ingredient's ID and density
+        JOIN ingredients i ON ri.ingredient_id = i.id 
         WHERE ri.recipe_id = ?
     ''', (recipe_id,)).fetchall()
 
@@ -84,7 +85,8 @@ def calculate_recipe_cost(recipe_id):
         recipe_amount = item['amount_needed']
         
         latest_purchase = db.execute('''
-            SELECT * FROM ingredient_purchases
+            SELECT p.*, i.density_g_ml FROM ingredient_purchases p
+            JOIN ingredients i ON p.ingredient_id = i.id
             WHERE ingredient_id = (SELECT id FROM ingredients WHERE name = ?)
             ORDER BY purchase_date DESC
             LIMIT 1
@@ -102,29 +104,43 @@ def calculate_recipe_cost(recipe_id):
         recipe_dim = UNIT_DIMENSIONS.get(recipe_unit)
         purchase_dim = UNIT_DIMENSIONS.get(purchase_unit)
 
-        ingredient_cost = 0.0
         cost_note = ""
+        ingredient_cost = 0.0 # Default cost is 0
 
-        if recipe_dim != purchase_dim or recipe_dim is None:
-            ingredient_cost = 0.0
-            cost_note = f"Cannot convert purchase unit '{purchase_unit}' to recipe unit '{recipe_unit}'"
-        elif recipe_dim == 'quantity':
-            # Handle items sold by 'each' or in a 'pack'
-            items_in_package = purchase_amount if purchase_unit == 'pack' else 1
-            if items_in_package == 0:
-                cost_note = "Package amount cannot be zero."
-            else:
+        # Case 1: Dimensions are the same (weight-to-weight, volume-to-volume)
+        if recipe_dim == purchase_dim and recipe_dim is not None:
+            if recipe_dim == 'quantity':
+                items_in_package = purchase_amount if purchase_unit == 'pack' else 1
                 cost_per_item = purchase_price / items_in_package
                 ingredient_cost = recipe_amount * cost_per_item
-        else:
-            # Handle weight and volume conversions
-            purchase_amount_in_base = purchase_amount * CONVERSIONS_TO_BASE.get(purchase_unit, 0)
-            if purchase_amount_in_base == 0:
-                cost_note = f"Invalid purchase unit '{purchase_unit}'."
-            else:
+            else: # weight or volume
+                purchase_amount_in_base = purchase_amount * CONVERSIONS_TO_BASE[purchase_unit]
                 cost_per_base_unit = purchase_price / purchase_amount_in_base
-                recipe_amount_in_base = recipe_amount * CONVERSIONS_TO_BASE.get(recipe_unit, 0)
+                recipe_amount_in_base = recipe_amount * CONVERSIONS_TO_BASE[recipe_unit]
                 ingredient_cost = recipe_amount_in_base * cost_per_base_unit
+        
+        # Case 2: Dimensions are different, requiring density conversion
+        elif recipe_dim != purchase_dim and recipe_dim is not None and purchase_dim is not None:
+            density = latest_purchase['density_g_ml']
+            if density is None:
+                cost_note = f"Conversion from {purchase_dim} to {recipe_dim} requires a density value."
+            else:
+                # Standardize both sides to grams and calculate cost
+                if purchase_dim == 'weight':
+                    purchase_grams = purchase_amount * CONVERSIONS_TO_BASE[purchase_unit]
+                    recipe_ml = recipe_amount * CONVERSIONS_TO_BASE[recipe_unit]
+                    recipe_grams = recipe_ml * density
+                else: # purchase_dim must be 'volume'
+                    purchase_ml = purchase_amount * CONVERSIONS_TO_BASE[purchase_unit]
+                    purchase_grams = purchase_ml * density
+                    recipe_grams = recipe_amount * CONVERSIONS_TO_BASE[recipe_unit]
+                
+                cost_per_gram = purchase_price / purchase_grams
+                ingredient_cost = recipe_grams * cost_per_gram
+        elif recipe_dim == 'quantity' or purchase_dim == 'quantity':
+            cost_note = f"Cannot convert between '{purchase_dim}' and '{recipe_dim}'."
+        else:
+            cost_note = f"Cannot convert from {purchase_unit} to {recipe_unit}"
         
         total_cost += ingredient_cost
         cost_breakdown.append({
@@ -250,8 +266,41 @@ def delete_ingredient_from_recipe(recipe_id, ingredient_id):
     flash('Ingredient removed from recipe.', 'success')
     return redirect(url_for('edit_recipe', recipe_id=recipe_id))
 
+# --- Base Ingredient Management Routes (NEW) ---
 
-# --- Ingredient Routes ---
+@app.route('/ingredients/base')
+def list_base_ingredients():
+    """Lists all unique ingredients for editing their base properties (like density)."""
+    db = get_db()
+    ingredients = db.execute('SELECT * FROM ingredients ORDER BY name').fetchall()
+    return render_template('base_ingredients.html', ingredients=ingredients)
+
+@app.route('/ingredient/base/edit/<int:ingredient_id>', methods=('GET', 'POST'))
+def edit_base_ingredient(ingredient_id):
+    """Handles editing a base ingredient's name and density."""
+    db = get_db()
+    ingredient = db.execute('SELECT * FROM ingredients WHERE id = ?', (ingredient_id,)).fetchone()
+
+    if ingredient is None:
+        flash('Base ingredient not found.', 'error')
+        return redirect(url_for('list_base_ingredients'))
+
+    if request.method == 'POST':
+        name = request.form['name'].strip()
+        # Use .get() to gracefully handle empty input, defaulting to None
+        density_str = request.form.get('density_g_ml')
+        density = float(density_str) if density_str else None
+
+        db.execute('UPDATE ingredients SET name = ?, density_g_ml = ? WHERE id = ?',
+                   (name, density, ingredient_id))
+        db.commit()
+        flash(f"'{name}' has been updated.", 'success')
+        return redirect(url_for('list_base_ingredients'))
+
+    return render_template('base_ingredient_form.html', ingredient=ingredient)
+
+
+# --- Ingredient Purchase Routes ---
 
 @app.route('/ingredients')
 def list_ingredients():

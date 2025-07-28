@@ -8,7 +8,8 @@ cursor = conn.cursor()
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS ingredients (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT UNIQUE NOT NULL
+    name TEXT UNIQUE NOT NULL, 
+    desnity_g_ml REAL
 )''')
 
 # Create ingredient_purchases table

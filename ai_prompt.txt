@@ -449,3 +449,68 @@ Similarly, replace the text input for "Unit Needed" in the "Add Ingredient to Re
 
 With these changes, your application is now significantly more robust. Users are guided to select from a standard list of units, preventing typos and ambiguity. The backend cost calculation is now powerful enough to handle conversions between any two units of the same type (weight-to-weight or volume-to-volume), making your cost estimates far more accurate and flexible.
 
+
+
+===============================================================================
+Prompt 6
+===============================================================================
+
+I would like to investigate these advanced conversions.
+Would those need to be ingredient specific?
+For example; 1 Liter of Canola Oil is 946.79 grams.
+For example; 1 Cup flour is 125 grams.
+Is there a way we can make it based on a lookup where the conversion factor is only entered one time? Not for every purchase entry.
+Are there potential issues that this will introduce ?
+
+===============================================================================
+
+Excellent questions. You've hit on the core challenge and the correct solution for implementing advanced conversions. Let's dive in.
+
+Yes, you are absolutely right:
+
+    Conversions are ingredient-specific: A cup of a dense liquid like honey weighs significantly more than a cup of a light, airy solid like all-purpose flour.
+
+    A one-time lookup is the right approach: This density information is a fundamental property of the ingredient itself, not of a specific purchase. Storing it once per ingredient is efficient and correct.
+
+We will create a new management area for "Base Ingredients" where you can define this conversion factor. The standard scientific measurement for this is density, typically measured in grams per milliliter (g/ml). This single value will allow us to convert any weight unit to any volume unit for that specific ingredient.
+Potential Issues this will introduce (The Trade-offs)
+
+Before we start, it's important to understand the issues this adds, as you astutely asked:
+
+    Data Accuracy is Critical: The entire system will depend on the accuracy of the density you enter. A "cup of flour" can weigh anywhere from 115g to 140g depending on the type (bread vs. cake) and how it's packed (sifted vs. scooped). You will need to find reliable sources (like cooking websites, food science resources, or your own measurements) for this data.
+
+    Ingredient Granularity: Your ingredients table has one entry for "Flour". If you buy both "Bread Flour" and "All-Purpose Flour", they will share the same density value unless you create them as two separate base ingredients. This approach requires you to be more specific when naming ingredients if their densities differ.
+
+    Increased Complexity: The application gains a new layer of data management. It's a powerful feature, but it adds one more thing to maintain.
+
+    Error Handling: The calculation logic must be smart enough to handle cases where an ingredient doesn't have a density value, and fail gracefully by informing the user that a conversion isn't possible.
+
+Now, let's implement the solution.
+
+===============================================================================
+
+Step 1: Modify the Database
+
+First, we need to add a column to our ingredients table to store the density. This is a one-time operation you'll need to perform on your recipes.db file. You can do this using a command-line tool like sqlite3 or a DB browser application.
+
+SQL Command:
+      
+ALTER TABLE ingredients ADD COLUMN density_g_ml REAL;
+
+This adds a new column named density_g_ml that can hold a floating-point number (like 0.92 or 1.0). It can be NULL for ingredients where you haven't defined a density.
+
+===============================================================================
+
+Step 2: Create a UI to Manage Base Ingredients
+
+We need a new page to list all unique ingredients and a form to edit their name and new density value.
+
+===============================================================================
+
+Step 3: Upgrade the Cost Calculation Logic
+
+Finally, replace the calculate_recipe_cost function in app.py with this much more powerful version.
+
+===============================================================================
+
+You now have a fully-featured system that handles advanced, ingredient-specific conversions, giving you far more accurate and flexible recipe costing.

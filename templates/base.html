@@ -27,6 +27,7 @@
     <nav>
         <a href="{{ url_for('index') }}">Recipes</a>
         <a href="{{ url_for('list_ingredients') }}">Ingredients</a>
+        <a href="{{ url_for('list_base_ingredients') }}">Manage Base Ingredients</a>
     </nav>
     <div class="container">
         {% with messages = get_flashed_messages(with_categories=true) %}

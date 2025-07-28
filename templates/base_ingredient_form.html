@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Edit Base Ingredient: {{ ingredient.name }}</h1>
+    
+    <form method="post">
+        <label for="name">Ingredient Name</label>
+        <input type="text" name="name" id="name" value="{{ ingredient.name }}" required>
+
+        <label for="density_g_ml">Density (in grams per milliliter)</label>
+        <input type="number" step="any" name="density_g_ml" id="density_g_ml" placeholder="e.g., 0.92 for oil" value="{{ ingredient.density_g_ml if ingredient.density_g_ml is not none else '' }}">
+        <p style="font-size: 0.9rem; color: #555;">This value is used for converting between weight (g, kg, oz) and volume (ml, l, Cup). Leave blank if not applicable.</p>
+        
+        <button type="submit">Update Ingredient</button>
+    </form>
+{% endblock %}
