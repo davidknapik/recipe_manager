@@ -406,3 +406,46 @@ How to Use It
     You will be redirected back to the ingredients list, where you will see the updated information.
 
 ===============================================================================
+
+
+===============================================================================
+Prompt 5
+===============================================================================
+
+Wonderful, the edit form looks great.
+
+I am concerned that the unit field is a free-form field where the user could put in any units. Would you recommend a better way to specify the units as to minimize user input errors. Perhaps by using a drop down box with only a few options (kg, g, ml, l, ea).
+
+In addition, expanding the framework to include additional units: 
+Cup - abbreviated as "Cup" or "Cups"
+ounces (weight) - abbreviated as "oz"
+ounces (fluid) - abbreviated as "fl.oz"
+tablespoon - abbreviated as "Tbsp"
+teaspoon - abbreviated as "tsp"
+
+
+===============================================================================
+
+This is an excellent and important improvement. Using a predefined list of units will drastically reduce errors and is a necessary step for building a reliable cost calculation system.
+
+Here’s how we can implement this change across the application, including the expanded list of units.
+1. Update app.py with Standardized Units and Conversion Logic
+
+First, we will define a master list of units and a new, more powerful calculate_recipe_cost function in app.py.
+
+===============================================================================
+
+2. Update templates/ingredient_form.html
+
+Replace the text input for "Package Unit" with a dropdown menu (<select>).
+
+===============================================================================
+
+3. Update templates/recipe_form.html
+
+Similarly, replace the text input for "Unit Needed" in the "Add Ingredient to Recipe" section with a dropdown.
+
+===============================================================================
+
+With these changes, your application is now significantly more robust. Users are guided to select from a standard list of units, preventing typos and ambiguity. The backend cost calculation is now powerful enough to handle conversions between any two units of the same type (weight-to-weight or volume-to-volume), making your cost estimates far more accurate and flexible.
+

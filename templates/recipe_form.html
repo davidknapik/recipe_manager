@@ -3,7 +3,6 @@
 {% block content %}
     <h1>{% if recipe %}Edit Recipe{% else %}Add New Recipe{% endif %}</h1>
     
-    {# --- Form for main recipe details --- #}
     <div class="card">
         <form method="post">
             <label for="name">Recipe Name</label>
@@ -25,14 +24,12 @@
         </form>
     </div>
 
-    {# --- Section for managing ingredients (only show when editing an existing recipe) --- #}
     {% if recipe %}
     <hr style="margin: 2rem 0;">
 
     <div class="card">
         <h2>Recipe Ingredients</h2>
 
-        {# --- List of current ingredients with delete buttons --- #}
         <table>
             <thead>
                 <tr>
@@ -62,7 +59,6 @@
 
         <hr style="margin: 2rem 0;">
         
-        {# --- Form to add a new ingredient to this recipe --- #}
         <h3>Add Ingredient to Recipe</h3>
         <p>You can add more base ingredients from the main "Ingredients" page.</p>
         <form action="{{ url_for('add_ingredient_to_recipe', recipe_id=recipe.id) }}" method="post">
@@ -78,7 +74,12 @@
             <input type="number" step="any" name="amount_needed" id="amount_needed" placeholder="e.g., 250" required>
             
             <label for="unit_needed">Unit Needed</label>
-            <input type="text" name="unit_needed" id="unit_needed" placeholder="e.g., g, ml, each" required>
+            <select name="unit_needed" id="unit_needed" required>
+                <option value="">-- Select a unit --</option>
+                {% for abbr, full_name, dimension in units %}
+                    <option value="{{ abbr }}">{{ full_name }}</option>
+                {% endfor %}
+            </select>
             
             <button type="submit">Add to Recipe</button>
         </form>
