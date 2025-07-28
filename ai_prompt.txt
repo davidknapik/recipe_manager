@@ -346,3 +346,63 @@ How to Use the New Functionality
 
 You now have a complete workflow for creating a recipe and dynamically managing its ingredient list from the web interface.
 
+
+
+===============================================================================
+Prompt 4
+===============================================================================
+
+The new form and workflow are looking good.
+I would like to have you add the ability to modify the data for existing ingredient.
+
+===============================================================================
+
+Excellent suggestion. Adding the ability to edit existing ingredient data is a crucial feature for maintaining an accurate inventory and cost analysis.
+
+We will follow a similar pattern to how we enabled recipe editing:
+
+    Add "Edit" links to the main ingredients list.
+
+    Create a new route (/ingredient/edit/<id>) in app.py to handle the logic.
+
+    Reuse and adapt the ingredient_form.html template so it can be pre-filled with existing data for editing.
+
+Here are the code modifications to implement this.
+
+===============================================================================
+
+1. Update app.py
+
+In your app.py file, add the new edit_ingredient route. No other routes need to be changed.
+
+===============================================================================
+
+2. Update templates/ingredients.html
+
+In this file, we simply need to add a new column to the table for "Actions" and place an "Edit" link for each row.
+
+===============================================================================
+
+3. Update templates/ingredient_form.html
+
+Now, we'll modify the ingredient form so it can be used for both adding and editing. It will check if a purchase object exists and change its title and field values accordingly.
+
+Replace the content of templates/ingredient_form.html with this updated version:
+
+===============================================================================
+
+How to Use It
+
+    Run the application (python app.py) and navigate to your browser.
+
+    Go to the Ingredients page from the main navigation.
+
+    You will now see an "Actions" column with an "Edit" link next to each ingredient purchase.
+
+    Clicking "Edit" will take you to the ingredient form, which will be pre-filled with the data for that specific purchase.
+
+    Modify the data as needed (you can change the price, date, or even correct the ingredient name) and click the "Update Purchase" button.
+
+    You will be redirected back to the ingredients list, where you will see the updated information.
+
+===============================================================================

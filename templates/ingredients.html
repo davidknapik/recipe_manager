@@ -13,6 +13,7 @@
                 <th>Price</th>
                 <th>Purchase Date</th>
                 <th>Expiry Date</th>
+                <th>Actions</th> {# <--- ADD THIS HEADER #}
             </tr>
         </thead>
         <tbody>
@@ -24,10 +25,15 @@
                 <td>${{ '%.2f'|format(p.price) }}</td>
                 <td>{{ p.purchase_date }}</td>
                 <td>{{ p.expiry_date or 'N/A' }}</td>
+                {# --- ADD THIS TABLE CELL --- #}
+                <td>
+                    <a href="{{ url_for('edit_ingredient', purchase_id=p.id) }}">Edit</a>
+                </td>
+                {# --------------------------- #}
             </tr>
             {% else %}
             <tr>
-                <td colspan="6">No ingredient purchases found.</td>
+                <td colspan="7">No ingredient purchases found.</td> {# <--- Update colspan to 7 #}
             </tr>
             {% endfor %}
         </tbody>

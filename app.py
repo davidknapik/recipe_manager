@@ -225,5 +225,66 @@ def add_ingredient():
             return redirect(url_for('list_ingredients'))
     return render_template('ingredient_form.html')
 
+@app.route('/ingredient/edit/<int:purchase_id>', methods=('GET', 'POST'))
+def edit_ingredient(purchase_id):
+    db = get_db()
+    # Fetch the specific purchase record, joining with the ingredients table to get the name
+    purchase = db.execute('''
+        SELECT ip.id, ip.store, ip.package_amount, ip.package_unit, ip.price, ip.purchase_date, ip.expiry_date, i.name
+        FROM ingredient_purchases ip
+        JOIN ingredients i ON ip.ingredient_id = i.id
+        WHERE ip.id = ?
+    ''', (purchase_id,)).fetchone()
+
+    # If the purchase ID doesn't exist, redirect the user back to the main list
+    if purchase is None:
+        flash('Ingredient purchase not found.', 'error')
+        return redirect(url_for('list_ingredients'))
+
+    # Handle the form submission
+    if request.method == 'POST':
+        # Get all the data from the submitted form
+        name = request.form['name'].strip()
+        store = request.form['store']
+        package_amount = request.form['package_amount']
+        package_unit = request.form['package_unit']
+        price = request.form['price']
+        purchase_date = request.form['purchase_date']
+        expiry_date = request.form['expiry_date']
+
+        # Basic validation
+        if not all([name, store, package_amount, package_unit, price, purchase_date]):
+            flash('Please fill all required fields.', 'error')
+            # Re-render the form with the existing data if validation fails
+            return render_template('ingredient_form.html', purchase=purchase)
+
+        # This logic handles cases where the ingredient name itself is changed.
+        # It finds the ID for the (potentially new) name, creating it if it doesn't exist.
+        cursor = db.cursor()
+        cursor.execute("SELECT id FROM ingredients WHERE name = ?", (name,))
+        result = cursor.fetchone()
+        if result:
+            ingredient_id = result['id']
+        else:
+            cursor.execute("INSERT INTO ingredients (name) VALUES (?)", (name,))
+            ingredient_id = cursor.lastrowid
+
+        # Update the ingredient_purchases table with the new data
+        cursor.execute('''
+            UPDATE ingredient_purchases
+            SET ingredient_id = ?, store = ?, package_amount = ?, package_unit = ?,
+                price = ?, purchase_date = ?, expiry_date = ?
+            WHERE id = ?
+        ''', (ingredient_id, store, float(package_amount), package_unit, float(price),
+              purchase_date, expiry_date, purchase_id))
+        db.commit()
+
+        flash('Ingredient purchase updated successfully!', 'success')
+        return redirect(url_for('list_ingredients'))
+
+    # For a GET request, just show the form pre-filled with the purchase data
+    return render_template('ingredient_form.html', purchase=purchase)
+
+
 if __name__ == '__main__':
     app.run(debug=True)
