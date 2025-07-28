@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Ingredient Purchases</h1>
+    <a href="{{ url_for('add_ingredient') }}">Add New Purchase</a>
+    <hr>
+    <table>
+        <thead>
+            <tr>
+                <th>Ingredient</th>
+                <th>Store</th>
+                <th>Package Size</th>
+                <th>Price</th>
+                <th>Purchase Date</th>
+                <th>Expiry Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in purchases %}
+            <tr>
+                <td>{{ p.name }}</td>
+                <td>{{ p.store }}</td>
+                <td>{{ p.package_amount }} {{ p.package_unit }}</td>
+                <td>${{ '%.2f'|format(p.price) }}</td>
+                <td>{{ p.purchase_date }}</td>
+                <td>{{ p.expiry_date or 'N/A' }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6">No ingredient purchases found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

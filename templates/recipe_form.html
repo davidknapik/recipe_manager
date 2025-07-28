@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{% if recipe %}Edit Recipe{% else %}Add New Recipe{% endif %}</h1>
+    <form method="post">
+        <label for="name">Recipe Name</label>
+        <input type="text" name="name" id="name" value="{{ recipe.name if recipe else '' }}">
+        
+        <label for="preparation_instructions">Preparation Instructions</label>
+        <textarea name="preparation_instructions" id="preparation_instructions" rows="8">{{ recipe.preparation_instructions if recipe else '' }}</textarea>
+        
+        <label for="bake_instructions">Bake/Cook Instructions</label>
+        <textarea name="bake_instructions" id="bake_instructions" rows="5">{{ recipe.bake_instructions if recipe else '' }}</textarea>
+        
+        <label for="yield">Yield (e.g., 12 Servings)</label>
+        <input type="text" name="yield" id="yield" value="{{ recipe.yield if recipe else '' }}">
+        
+        <button type="submit">Save Recipe</button>
+    </form>
+{% endblock %}

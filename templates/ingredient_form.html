@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Add New Ingredient Purchase</h1>
+    <p>This adds a record of a specific purchase. If the ingredient exists, it will be linked. If not, a new base ingredient will be created.</p>
+    <form method="post">
+        <label for="name">Ingredient Name (e.g., Bread Flour)</label>
+        <input type="text" name="name" id="name" required>
+        
+        <label for="store">Store (e.g., Tesco)</label>
+        <input type="text" name="store" id="store" required>
+        
+        <label for="package_amount">Package Amount (e.g., 2, 18, 800)</label>
+        <input type="number" step="0.01" name="package_amount" id="package_amount" required>
+        
+        <label for="package_unit">Package Unit (e.g., kg, pack, ml)</label>
+        <input type="text" name="package_unit" id="package_unit" required>
+        
+        <label for="price">Price</label>
+        <input type="number" step="0.01" name="price" id="price" required>
+        
+        <label for="purchase_date">Purchase Date</label>
+        <input type="date" name="purchase_date" id="purchase_date" required>
+        
+        <label for="expiry_date">Expiration Date (Optional)</label>
+        <input type="date" name="expiry_date" id="expiry_date">
+        
+        <button type="submit">Save Ingredient Purchase</button>
+    </form>
+{% endblock %}
