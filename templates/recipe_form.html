@@ -2,19 +2,87 @@
 
 {% block content %}
     <h1>{% if recipe %}Edit Recipe{% else %}Add New Recipe{% endif %}</h1>
-    <form method="post">
-        <label for="name">Recipe Name</label>
-        <input type="text" name="name" id="name" value="{{ recipe.name if recipe else '' }}">
+    
+    {# --- Form for main recipe details --- #}
+    <div class="card">
+        <form method="post">
+            <label for="name">Recipe Name</label>
+            <input type="text" name="name" id="name" value="{{ recipe.name if recipe else '' }}" required>
+            
+            <label for="preparation_instructions">Preparation Instructions</label>
+            <textarea name="preparation_instructions" id="preparation_instructions" rows="8">{{ recipe.preparation_instructions if recipe else '' }}</textarea>
+            
+            <label for="bake_instructions">Bake/Cook Instructions</label>
+            <textarea name="bake_instructions" id="bake_instructions" rows="5">{{ recipe.bake_instructions if recipe else '' }}</textarea>
+            
+            <label for="yield">Yield (e.g., 12 Servings)</label>
+            <input type="text" name="yield" id="yield" value="{{ recipe.yield if recipe else '' }}">
+            
+            <button type="submit">{% if recipe %}Update Recipe Details{% else %}Create Recipe and Add Ingredients{% endif %}</button>
+            {% if recipe %}
+            <a href="{{ url_for('recipe_detail', recipe_id=recipe.id) }}" style="float: right; margin-top: 0.5rem;">View Saved Recipe</a>
+            {% endif %}
+        </form>
+    </div>
+
+    {# --- Section for managing ingredients (only show when editing an existing recipe) --- #}
+    {% if recipe %}
+    <hr style="margin: 2rem 0;">
+
+    <div class="card">
+        <h2>Recipe Ingredients</h2>
+
+        {# --- List of current ingredients with delete buttons --- #}
+        <table>
+            <thead>
+                <tr>
+                    <th>Ingredient</th>
+                    <th>Amount</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in recipe_ingredients %}
+                <tr>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.amount_needed }} {{ item.unit_needed }}</td>
+                    <td>
+                        <form action="{{ url_for('delete_ingredient_from_recipe', recipe_id=recipe.id, ingredient_id=item.id) }}" method="post" style="display: inline;">
+                            <button type="submit" onclick="return confirm('Are you sure you want to remove this ingredient?');" style="background-color: #dc3545;">Remove</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3">No ingredients have been added to this recipe yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <hr style="margin: 2rem 0;">
         
-        <label for="preparation_instructions">Preparation Instructions</label>
-        <textarea name="preparation_instructions" id="preparation_instructions" rows="8">{{ recipe.preparation_instructions if recipe else '' }}</textarea>
-        
-        <label for="bake_instructions">Bake/Cook Instructions</label>
-        <textarea name="bake_instructions" id="bake_instructions" rows="5">{{ recipe.bake_instructions if recipe else '' }}</textarea>
-        
-        <label for="yield">Yield (e.g., 12 Servings)</label>
-        <input type="text" name="yield" id="yield" value="{{ recipe.yield if recipe else '' }}">
-        
-        <button type="submit">Save Recipe</button>
-    </form>
+        {# --- Form to add a new ingredient to this recipe --- #}
+        <h3>Add Ingredient to Recipe</h3>
+        <p>You can add more base ingredients from the main "Ingredients" page.</p>
+        <form action="{{ url_for('add_ingredient_to_recipe', recipe_id=recipe.id) }}" method="post">
+            <label for="ingredient_id">Select Ingredient</label>
+            <select name="ingredient_id" id="ingredient_id" required>
+                <option value="">-- Choose an ingredient --</option>
+                {% for ingredient in all_ingredients %}
+                    <option value="{{ ingredient.id }}">{{ ingredient.name }}</option>
+                {% endfor %}
+            </select>
+            
+            <label for="amount_needed">Amount Needed</label>
+            <input type="number" step="any" name="amount_needed" id="amount_needed" placeholder="e.g., 250" required>
+            
+            <label for="unit_needed">Unit Needed</label>
+            <input type="text" name="unit_needed" id="unit_needed" placeholder="e.g., g, ml, each" required>
+            
+            <button type="submit">Add to Recipe</button>
+        </form>
+    </div>
+    {% endif %}
+
 {% endblock %}

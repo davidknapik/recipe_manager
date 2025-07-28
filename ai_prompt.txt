@@ -225,7 +225,7 @@ This structure provides a solid and scalable foundation for your recipe manageme
 
 
 ===============================================================================
-Prompt
+Prompt 2
 ===============================================================================
 
 Could you help create a Web based front end to view and edit recipes as well as a section for creating and updating ingredient data?
@@ -294,3 +294,55 @@ IGNORE_WHEN_COPYING_START
     Open your browser: You will see output in the terminal like * Running on http://127.0.0.1:5000/. Open this URL in your web browser.
 
 You now have a fully functional web interface to view your recipes, check their cost, and add new ingredient purchases.
+
+
+===============================================================================
+Prompt 3
+===============================================================================
+
+This is looking great, thank you.
+It appears though that there is no way to add or remove ingredients to a recipe in the recipe_form.html could you please help adding that in.
+
+===============================================================================
+
+
+Of course. This is an excellent next step to make the application truly interactive. To achieve this, we will update both the Flask backend (app.py) and the recipe form template (recipe_form.html).
+
+The key changes will be:
+
+    Modify the edit_recipe page to display a list of the recipe's current ingredients, each with a "Remove" button.
+
+    Add a form on the same page to search for and add new ingredients to the recipe.
+
+    Create new routes in app.py to handle the logic of adding and removing these ingredients from the database.
+
+    Improve the workflow so that after creating a new recipe, you are immediately taken to the edit page to add ingredients.
+
+Here are the updated code blocks.
+
+1. Updated app.py
+
+Make the following changes to your app.py file. We are adding two new routes and modifying the add_recipe and edit_recipe routes.
+
+2. Fully Revised recipe_form.html
+
+Replace the entire content of templates/recipe_form.html with the code below. It is now a dynamic page that handles both creating and editing, including the management of ingredients.
+
+How to Use the New Functionality
+
+    Run the App: Make sure you have saved both files and run python app.py from your terminal.
+
+    Add a New Recipe: Go to the homepage and click "Add New Recipe". Fill in the details (Name, instructions, etc.) and click "Create Recipe and Add Ingredients".
+
+    Automatic Redirect: The application will now automatically take you to the "Edit Recipe" page for the recipe you just created.
+
+    Manage Ingredients: On this page, you will see two sections:
+
+        The top section allows you to continue editing the recipe's name or instructions.
+
+        The bottom section, "Recipe Ingredients," shows an empty list at first. Use the "Add Ingredient to Recipe" form to select a base ingredient from the dropdown, specify the amount and unit needed, and click "Add to Recipe".
+
+    View and Remove: The page will reload, and you will see the ingredient you just added in the list at the top of the section. Next to it will be a "Remove" button to delete it.
+
+You now have a complete workflow for creating a recipe and dynamically managing its ingredient list from the web interface.
+
