@@ -17,6 +17,7 @@ cursor.execute('''
 CREATE TABLE IF NOT EXISTS ingredient_purchases (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     ingredient_id INTEGER NOT NULL,
+    brand TEXT,
     store TEXT,
     package_amount REAL NOT NULL,
     package_unit TEXT NOT NULL,

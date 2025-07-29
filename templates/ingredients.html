@@ -16,6 +16,7 @@
               {% endmacro %}
 
               {{ sortable_header('name', 'Ingredient') }}
+              <th>Brand/Manufacturer</th>
               {{ sortable_header('store', 'Store') }}
               <th>Package Size</th>
               <th>Price</th>
@@ -28,6 +29,7 @@
           {% for p in purchases %}
           <tr>
               <td>{{ p.name }}</td>
+              <td>{{ p.brand or '' }}</td>
               <td>{{ p.store }}</td>
               <td>{{ p.package_amount }} {{ p.package_unit }}</td>
               <td>${{ '%.2f'|format(p.price) }}</td>
@@ -39,7 +41,7 @@
           </tr>
           {% else %}
           <tr>
-              <td colspan="7">No ingredient purchases found.</td>
+              <td colspan="8">No ingredient purchases found.</td>
           </tr>
           {% endfor %}
       </tbody>

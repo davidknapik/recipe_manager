@@ -547,5 +547,46 @@ We will significantly upgrade the list_ingredients route to handle query paramet
 
 After applying these changes, your ingredient purchases page will now default to showing the 25 most recent purchases. You can click the column headers to sort, and use the "Next" and "Previous" links to navigate through your full purchase history.
 
+
 ===============================================================================
+Prompt 8
+===============================================================================
+
+Looking good.
+I would like to have you add a new data field to the ingredient_purchases table titled 'brand' which will be the Brand or Manufacturer of the product that was purchased.
+I would like to have you add a new column to the ingredient form titled 'Brand/Manufacturer' it should appear as the second column
+I would like to have you update the 'add ingredient' form with the associated data entry field. This field should be ordered just below the 'Ingredient Name'
+Please output full files of the changes
+
+===============================================================================
+
+Of course. Adding a 'brand' field is a great way to add more detail to your ingredient tracking. Here are the complete changes to implement this new field across the application.
+
+===============================================================================
+
+Step 1: Update the Database Schema
+
+First, you need to add the new brand column to your ingredient_purchases table. You must run this SQL command on your recipes.db database file once. You can do this using a tool like DB Browser for SQLite or the sqlite3 command-line tool.
+
+SQL Command to run:
+Generated sql
+
+```
+ALTER TABLE ingredient_purchases ADD COLUMN brand TEXT;
+```
+
+This adds a new text column that can be left empty (NULL) for existing entries.
+
+
+2. Complete app.py File
+
+This updated file includes the brand field in all the logic for adding and editing ingredient purchases.
+
+3. Complete templates/ingredients.html File
+
+This version adds the "Brand/Manufacturer" column to the ingredient purchases list.
+
+4. Complete templates/ingredient_form.html File
+
+This version adds the "Brand/Manufacturer" input field to the form for adding and editing purchases.
 

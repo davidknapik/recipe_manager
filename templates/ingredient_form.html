@@ -13,6 +13,9 @@
         
         <label for="name">Ingredient Name (e.g., Bread Flour)</label>
         <input type="text" name="name" id="name" value="{{ purchase.name if purchase else '' }}" required>
+
+        <label for="brand">Brand/Manufacturer (Optional)</label>
+        <input type="text" name="brand" id="brand" value="{{ purchase.brand if purchase else '' }}">
         
         <label for="store">Store (e.g., Tesco)</label>
         <input type="text" name="store" id="store" value="{{ purchase.store if purchase else '' }}" required>

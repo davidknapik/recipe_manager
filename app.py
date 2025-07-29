@@ -355,6 +355,7 @@ def list_ingredients():
 def add_ingredient():
     if request.method == 'POST':
         name = request.form['name'].strip()
+        brand = request.form['brand'].strip()
         store = request.form['store']
         package_amount = request.form['package_amount']
         package_unit = request.form['package_unit']
@@ -375,9 +376,9 @@ def add_ingredient():
                 cursor.execute("INSERT INTO ingredients (name) VALUES (?)", (name,))
                 ingredient_id = cursor.lastrowid
             cursor.execute('''
-                INSERT INTO ingredient_purchases (ingredient_id, store, package_amount, package_unit, price, purchase_date, expiry_date)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            ''', (ingredient_id, store, float(package_amount), package_unit, float(price), purchase_date, expiry_date))
+                INSERT INTO ingredient_purchases (ingredient_id, brand, store, package_amount, package_unit, price, purchase_date, expiry_date)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (ingredient_id, brand, store, float(package_amount), package_unit, float(price), purchase_date, expiry_date))
             db.commit()
             flash('Ingredient purchase added successfully!', 'success')
             return redirect(url_for('list_ingredients'))
@@ -389,7 +390,7 @@ def add_ingredient():
 def edit_ingredient(purchase_id):
     db = get_db()
     purchase = db.execute('''
-        SELECT ip.id, ip.store, ip.package_amount, ip.package_unit, ip.price, ip.purchase_date, ip.expiry_date, i.name
+        SELECT ip.id, ip.brand, ip.store, ip.package_amount, ip.package_unit, ip.price, ip.purchase_date, ip.expiry_date, i.name
         FROM ingredient_purchases ip
         JOIN ingredients i ON ip.ingredient_id = i.id
         WHERE ip.id = ?
@@ -401,6 +402,7 @@ def edit_ingredient(purchase_id):
 
     if request.method == 'POST':
         name = request.form['name'].strip()
+        brand = request.form['brand'].strip()
         store = request.form['store']
         package_amount = request.form['package_amount']
         package_unit = request.form['package_unit']
@@ -423,10 +425,10 @@ def edit_ingredient(purchase_id):
 
         cursor.execute('''
             UPDATE ingredient_purchases
-            SET ingredient_id = ?, store = ?, package_amount = ?, package_unit = ?,
+            SET ingredient_id = ?, brand = ?, store = ?, package_amount = ?, package_unit = ?,
                 price = ?, purchase_date = ?, expiry_date = ?
             WHERE id = ?
-        ''', (ingredient_id, store, float(package_amount), package_unit, float(price),
+        ''', (ingredient_id, brand, store, float(package_amount), package_unit, float(price),
               purchase_date, expiry_date, purchase_id))
         db.commit()
 
