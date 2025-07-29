@@ -18,7 +18,7 @@
                 <td>{{ ingredient.name }}</td>
                 <td>{{ '%.3f'|format(ingredient.density_g_ml) if ingredient.density_g_ml else 'Not set' }}</td>
                 <td>
-                    <a href="{{ url_for('edit_base_ingredient', ingredient_id=ingredient.id) }}">Edit</a>
+                    <a href="{{ url_for('edit_base_ingredient', ingredient_id=ingredient.id) }}" class="button button-yellow button-sm">Edit</a>
                 </td>
             </tr>
             {% else %}
