@@ -84,6 +84,11 @@ This project only requires Flask.
 pip install Flask
 ```
 
+or using the requirements.txt
+```bash
+pip install -r requirements.txt
+```
+
 **5. Initialize the Database**
 The application uses a SQLite database named `recipes.db`. If you are starting fresh, you need to create the database and its tables.
 
@@ -106,10 +111,11 @@ The application will be available at `http://127.0.0.1:5000` in your web browser
 ## Usage
 
 1.  **Navigate to the "Ingredients" Page**: Before creating recipes, you need to log your ingredient purchases. Click "Add New Purchase" and fill in the details for items like flour, eggs, etc.
-2.  **Navigate to the "Recipes" Page**: Click "Add New Recipe".
-3.  **Create the Recipe**: Fill in the name and instructions, then click "Create Recipe and Add Ingredients".
-4.  **Add Ingredients to the Recipe**: You will be redirected to the edit page. Here, you can select ingredients from your database, specify the amount needed for the recipe, and add them one by one.
-5.  **View the Final Recipe**: Once you've added all ingredients, click "View Saved Recipe" to see the full details, including the final calculated cost.
+2.  **Navigate to the "Manage Base Ingredients" Page**: Click an ingredient and verify or update its weight to volume information in g/ml. 
+3.  **Navigate to the "Recipes" Page**: Click "Add New Recipe".
+4.  **Create the Recipe**: Fill in the name and instructions, then click "Create Recipe and Add Ingredients".
+5.  **Add Ingredients to the Recipe**: You will be redirected to the edit page. Here, you can select ingredients from your database, specify the amount needed for the recipe, and add them one by one.
+6.  **View the Final Recipe**: Once you've added all ingredients, click "View Saved Recipe" to see the full details, including the final calculated cost.
 
 ## Database Schema
 
@@ -156,7 +162,6 @@ The application uses four SQL tables to organize data.
 - [ ] **Shopping List Generator**: Create a shopping list based on a selected recipe or a meal plan.
 - [ ] **Recipe Tagging**: Add tags (e.g., "Dessert", "Vegan", "Quick") for easier filtering.
 - [ ] **Image Uploads**: Allow users to upload a photo for each recipe.
-- [ ] **Advanced Conversions**: Implement a system for weight-to-volume conversions for common ingredients (e.g., 1 cup of flour in grams).
 - [ ] **REST API**: Develop an API to allow other applications to interact with the recipe data.
 
 ## License

@@ -1,5 +1,6 @@
 import sqlite3
 from flask import Flask, render_template, request, url_for, redirect, flash, g
+from datetime import date
 
 # --- App and Database Configuration ---
 app = Flask(__name__)
@@ -266,7 +267,7 @@ def delete_ingredient_from_recipe(recipe_id, ingredient_id):
     flash('Ingredient removed from recipe.', 'success')
     return redirect(url_for('edit_recipe', recipe_id=recipe_id))
 
-# --- Base Ingredient Management Routes (NEW) ---
+# --- Base Ingredient Management Routes ---
 
 @app.route('/ingredients/base')
 def list_base_ingredients():
@@ -305,13 +306,50 @@ def edit_base_ingredient(ingredient_id):
 @app.route('/ingredients')
 def list_ingredients():
     db = get_db()
-    purchases = db.execute('''
-        SELECT ip.*, i.name 
-        FROM ingredient_purchases ip
-        JOIN ingredients i ON ip.ingredient_id = i.id
-        ORDER BY i.name, ip.purchase_date DESC
-    ''').fetchall()
-    return render_template('ingredients.html', purchases=purchases)
+
+    # --- 1. Pagination Logic ---
+    page = request.args.get('page', 1, type=int)
+    per_page = 25
+    offset = (page - 1) * per_page
+
+    # --- 2. Sorting Logic ---
+    sort_by = request.args.get('sort_by', 'purchase_date') # Default sort
+    order = request.args.get('order', 'desc') # Default order
+
+    # Whitelist of allowed sort columns to prevent SQL injection
+    allowed_sort_columns = {
+        'name': 'i.name',
+        'store': 'ip.store',
+        'purchase_date': 'ip.purchase_date'
+    }
+    sort_column = allowed_sort_columns.get(sort_by, 'ip.purchase_date')
+    
+    # Whitelist for order direction
+    if order not in ['asc', 'desc']:
+        order = 'desc'
+
+    # --- 3. Filtering Logic (for future use) ---
+    # For now, we are just passing distinct values to the template for the dropdowns.
+    # A full implementation would add WHERE clauses here based on request.args.
+    distinct_stores = db.execute('SELECT DISTINCT store FROM ingredient_purchases ORDER BY store').fetchall()
+    distinct_ingredients = db.execute('SELECT DISTINCT name FROM ingredients ORDER BY name').fetchall()
+
+    # --- 4. Database Query (Updated) ---
+    query = f'''
+        SELECT ip.*, i.name
+        FROM ingredient_purchases ip JOIN ingredients i ON ip.ingredient_id = i.id
+        ORDER BY {sort_column} {order}
+        LIMIT ? OFFSET ?
+    '''
+    purchases = db.execute(query, (per_page, offset)).fetchall()
+
+    # Get total count for pagination links
+    total_purchases = db.execute('SELECT COUNT(id) FROM ingredient_purchases').fetchone()[0]
+    total_pages = (total_purchases + per_page - 1) // per_page
+
+    return render_template('ingredients.html', purchases=purchases,
+                           page=page, total_pages=total_pages,
+                           sort_by=sort_by, order=order)
 
 @app.route('/ingredient/add', methods=('GET', 'POST'))
 def add_ingredient():
@@ -344,7 +382,8 @@ def add_ingredient():
             flash('Ingredient purchase added successfully!', 'success')
             return redirect(url_for('list_ingredients'))
             
-    return render_template('ingredient_form.html', units=UNITS)
+    # For a GET request, pass today's date to the template
+    return render_template('ingredient_form.html', units=UNITS, today_date=date.today().isoformat())
 
 @app.route('/ingredient/edit/<int:purchase_id>', methods=('GET', 'POST'))
 def edit_ingredient(purchase_id):

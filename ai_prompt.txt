@@ -514,3 +514,38 @@ Finally, replace the calculate_recipe_cost function in app.py with this much mor
 ===============================================================================
 
 You now have a fully-featured system that handles advanced, ingredient-specific conversions, giving you far more accurate and flexible recipe costing.
+
+
+===============================================================================
+Prompt 7
+===============================================================================
+
+A few QOL changes have been requested.
+
+    When adding a new purchase, have the Purchase date default to 'today'
+
+    Add sorting and filtering to the Ingredient Purchases page headers. Specifically to the 'Ingredient', 'Store' and 'Purchase Date' columns.
+
+    The Ingredient Purchases form will continuously increase in size. Please add some pagination limiting the display to something like 25 per page along with appropriate navigation links for additional pages.
+
+===============================================================================
+
+Excellent quality-of-life improvements. These features will make the application much more user-friendly, especially as the data grows.
+
+Here are the step-by-step changes in the requested diff format.
+
+1. Default Purchase Date to 'Today'
+
+This is a straightforward change. We'll pass today's date to the template and use it to set the value of the date input field.
+
+2 & 3. Sorting, Filtering, and Pagination
+
+These features are best implemented together as they all affect the main ingredient purchase query.
+File: app.py
+
+We will significantly upgrade the list_ingredients route to handle query parameters for sorting, filtering, and pagination. I've added comments to explain each part of the new logic.
+
+After applying these changes, your ingredient purchases page will now default to showing the 25 most recent purchases. You can click the column headers to sort, and use the "Next" and "Previous" links to navigate through your full purchase history.
+
+===============================================================================
+

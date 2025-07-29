@@ -34,7 +34,7 @@
         <input type="number" step="0.01" name="price" id="price" value="{{ purchase.price if purchase else '' }}" required>
         
         <label for="purchase_date">Purchase Date</label>
-        <input type="date" name="purchase_date" id="purchase_date" value="{{ purchase.purchase_date if purchase else '' }}" required>
+        <input type="date" name="purchase_date" id="purchase_date" value="{{ purchase.purchase_date if purchase else today_date }}" required>
         
         <label for="expiry_date">Expiration Date (Optional)</label>
         <input type="date" name="expiry_date" id="expiry_date" value="{{ purchase.expiry_date if purchase else '' }}">
