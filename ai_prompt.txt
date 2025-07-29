@@ -611,3 +611,9 @@ update the 'Add New Purchase' link on the Ingredient_form to have a similar butt
 update the Edit link on the recipe_detail form to have a similar button style.
 update the "Add New Recipe" on the main index to have a similar button style (with color 'green')
 
+===============================================================================
+Prompt 11
+===============================================================================
+
+Have ingredient Name field a combobox populated by existing entry names, but also allow for free form entry for tryly new itmes.
+If the user selects an existing name, have the form auto populate the other fields (Brand, Store, Package Amount, Package Unit, Price)

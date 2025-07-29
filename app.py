@@ -1,4 +1,5 @@
 import sqlite3
+import json
 from flask import Flask, render_template, request, url_for, redirect, flash, g
 from datetime import date
 
@@ -267,12 +268,11 @@ def delete_ingredient_from_recipe(recipe_id, ingredient_id):
     flash('Ingredient removed from recipe.', 'success')
     return redirect(url_for('edit_recipe', recipe_id=recipe_id))
 
-# --- NEW ROUTE FOR EDITING A RECIPE INGREDIENT ---
+
 @app.route('/recipe/<int:recipe_id>/edit_ingredient/<int:ingredient_id>', methods=('GET', 'POST'))
 def edit_recipe_ingredient(recipe_id, ingredient_id):
     db = get_db()
 
-    # On form submission, update the database
     if request.method == 'POST':
         new_ingredient_id = request.form['ingredient_id']
         amount_needed = request.form['amount_needed']
@@ -291,8 +291,6 @@ def edit_recipe_ingredient(recipe_id, ingredient_id):
         
         return redirect(url_for('edit_recipe', recipe_id=recipe_id))
 
-    # For a GET request, fetch data and show the form
-    # Get the specific ingredient entry for this recipe
     recipe_ingredient = db.execute('''
         SELECT * FROM recipe_ingredients WHERE recipe_id = ? AND ingredient_id = ?
     ''', (recipe_id, ingredient_id)).fetchone()
@@ -301,7 +299,6 @@ def edit_recipe_ingredient(recipe_id, ingredient_id):
         flash('Recipe ingredient not found.', 'error')
         return redirect(url_for('edit_recipe', recipe_id=recipe_id))
 
-    # Get all base ingredients to populate the dropdown for substitutions
     all_ingredients = db.execute('SELECT * FROM ingredients ORDER BY name').fetchall()
 
     return render_template('edit_recipe_ingredient.html', recipe_id=recipe_id,
@@ -328,7 +325,6 @@ def edit_base_ingredient(ingredient_id):
 
     if request.method == 'POST':
         name = request.form['name'].strip()
-        # Use .get() to gracefully handle empty input, defaulting to None
         density_str = request.form.get('density_g_ml')
         density = float(density_str) if density_str else None
 
@@ -347,16 +343,13 @@ def edit_base_ingredient(ingredient_id):
 def list_ingredients():
     db = get_db()
 
-    # --- 1. Pagination Logic ---
     page = request.args.get('page', 1, type=int)
     per_page = 25
     offset = (page - 1) * per_page
 
-    # --- 2. Sorting Logic ---
-    sort_by = request.args.get('sort_by', 'purchase_date') # Default sort
-    order = request.args.get('order', 'desc') # Default order
+    sort_by = request.args.get('sort_by', 'purchase_date')
+    order = request.args.get('order', 'desc')
 
-    # Whitelist of allowed sort columns to prevent SQL injection
     allowed_sort_columns = {
         'name': 'i.name',
         'store': 'ip.store',
@@ -364,17 +357,9 @@ def list_ingredients():
     }
     sort_column = allowed_sort_columns.get(sort_by, 'ip.purchase_date')
     
-    # Whitelist for order direction
     if order not in ['asc', 'desc']:
         order = 'desc'
 
-    # --- 3. Filtering Logic (for future use) ---
-    # For now, we are just passing distinct values to the template for the dropdowns.
-    # A full implementation would add WHERE clauses here based on request.args.
-    distinct_stores = db.execute('SELECT DISTINCT store FROM ingredient_purchases ORDER BY store').fetchall()
-    distinct_ingredients = db.execute('SELECT DISTINCT name FROM ingredients ORDER BY name').fetchall()
-
-    # --- 4. Database Query (Updated) ---
     query = f'''
         SELECT ip.*, i.name
         FROM ingredient_purchases ip JOIN ingredients i ON ip.ingredient_id = i.id
@@ -383,7 +368,6 @@ def list_ingredients():
     '''
     purchases = db.execute(query, (per_page, offset)).fetchall()
 
-    # Get total count for pagination links
     total_purchases = db.execute('SELECT COUNT(id) FROM ingredient_purchases').fetchone()[0]
     total_pages = (total_purchases + per_page - 1) // per_page
 
@@ -393,7 +377,9 @@ def list_ingredients():
 
 @app.route('/ingredient/add', methods=('GET', 'POST'))
 def add_ingredient():
+    db = get_db()
     if request.method == 'POST':
+        # This POST logic is unchanged
         name = request.form['name'].strip()
         brand = request.form['brand'].strip()
         store = request.form['store']
@@ -406,7 +392,6 @@ def add_ingredient():
         if not all([name, store, package_amount, package_unit, price, purchase_date]):
             flash('Please fill all required fields.', 'error')
         else:
-            db = get_db()
             cursor = db.cursor()
             cursor.execute("SELECT id FROM ingredients WHERE name = ?", (name,))
             result = cursor.fetchone()
@@ -422,9 +407,35 @@ def add_ingredient():
             db.commit()
             flash('Ingredient purchase added successfully!', 'success')
             return redirect(url_for('list_ingredients'))
+    
+    # For a GET request, prepare data for the auto-fill form
+    all_ingredients = db.execute('SELECT id, name FROM ingredients ORDER BY name').fetchall()
+    
+    latest_purchases_data = {}
+    for ingredient in all_ingredients:
+        latest_purchase = db.execute('''
+            SELECT brand, store, package_amount, package_unit, price
+            FROM ingredient_purchases
+            WHERE ingredient_id = ?
+            ORDER BY purchase_date DESC
+            LIMIT 1
+        ''', (ingredient['id'],)).fetchone()
+        
+        if latest_purchase:
+            # Store the data using the ingredient's name as the key
+            latest_purchases_data[ingredient['name']] = {
+                'brand': latest_purchase['brand'],
+                'store': latest_purchase['store'],
+                'package_amount': latest_purchase['package_amount'],
+                'package_unit': latest_purchase['package_unit'],
+                'price': latest_purchase['price']
+            }
             
-    # For a GET request, pass today's date to the template
-    return render_template('ingredient_form.html', units=UNITS, today_date=date.today().isoformat())
+    return render_template('ingredient_form.html',
+                           units=UNITS,
+                           today_date=date.today().isoformat(),
+                           all_ingredients=all_ingredients,
+                           latest_purchases_json=json.dumps(latest_purchases_data))
 
 @app.route('/ingredient/edit/<int:purchase_id>', methods=('GET', 'POST'))
 def edit_ingredient(purchase_id):

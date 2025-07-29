@@ -5,14 +5,24 @@
     
     <p>
         {% if not purchase %}
-        This adds a record of a specific purchase. If the ingredient exists, it will be linked. If not, a new base ingredient will be created.
+        Select an existing ingredient from the dropdown to auto-fill its last purchased details, or type a new ingredient name to create it.
         {% endif %}
     </p>
 
     <form method="post">
         
-        <label for="name">Ingredient Name (e.g., Bread Flour)</label>
-        <input type="text" name="name" id="name" value="{{ purchase.name if purchase else '' }}" required>
+        <label for="name">Ingredient Name</label>
+        {# If we are editing a purchase, use a simple input. Otherwise, use the dynamic datalist. #}
+        {% if purchase %}
+            <input type="text" name="name" id="name" value="{{ purchase.name }}" required>
+        {% else %}
+            <input list="ingredient-list" name="name" id="name" class="form-control" autocomplete="off" required>
+            <datalist id="ingredient-list">
+                {% for ingredient in all_ingredients %}
+                    <option value="{{ ingredient.name }}">
+                {% endfor %}
+            </datalist>
+        {% endif %}
 
         <label for="brand">Brand/Manufacturer (Optional)</label>
         <input type="text" name="brand" id="brand" value="{{ purchase.brand if purchase else '' }}">
@@ -44,4 +54,43 @@
         
         <button type="submit">{% if purchase %}Update Purchase{% else %}Save Ingredient Purchase{% endif %}</button>
     </form>
-{% endblock %}
+
+{# This script only runs when adding a new purchase, not when editing one. #}
+{% if not purchase %}
+<script>
+    // Use the `tojson` filter to safely embed the JSON data
+    const latestPurchases = JSON.parse('{{ latest_purchases_json | tojson | safe }}');
+
+    // Get references to all the form elements
+    const nameInput = document.getElementById('name');
+    const brandInput = document.getElementById('brand');
+    const storeInput = document.getElementById('store');
+    const amountInput = document.getElementById('package_amount');
+    const unitInput = document.getElementById('package_unit');
+    const priceInput = document.getElementById('price');
+
+    // Add an event listener that fires whenever the input value changes
+    nameInput.addEventListener('input', (event) => {
+        const selectedName = event.target.value;
+        const data = latestPurchases[selectedName];
+
+        if (data) {
+            // If the selected name has data, populate the fields
+            brandInput.value = data.brand || '';
+            storeInput.value = data.store || '';
+            amountInput.value = data.package_amount || '';
+            unitInput.value = data.package_unit || '';
+            priceInput.value = data.price || '';
+        } else {
+            // If it's a new ingredient (not in our data), clear the fields
+            brandInput.value = '';
+            storeInput.value = '';
+            amountInput.value = '';
+            unitInput.value = '';
+            priceInput.value = '';
+        }
+    });
+</script>
+{% endif %}
+
+{% endblock %}```
