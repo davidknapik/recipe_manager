@@ -611,9 +611,43 @@ update the 'Add New Purchase' link on the Ingredient_form to have a similar butt
 update the Edit link on the recipe_detail form to have a similar button style.
 update the "Add New Recipe" on the main index to have a similar button style (with color 'green')
 
+
 ===============================================================================
 Prompt 11
 ===============================================================================
 
 Have ingredient Name field a combobox populated by existing entry names, but also allow for free form entry for tryly new itmes.
 If the user selects an existing name, have the form auto populate the other fields (Brand, Store, Package Amount, Package Unit, Price)
+
+
+===============================================================================
+Prompt 12
+===============================================================================
+In app.py the @app.route('/ingredient/add') function is looking up the most recent database entry and should be transferring the data to the ingredient_form webpage to populate into the form.
+
+There is an error being reported by the web browser in the ingredient_form.html when the latestPurchases are being read in through the JSON.parse function.
+
+The error is:
+Uncaught SyntaxError: JSON.parse: unexpected non-whitespace character after JSON data at line 1 column 4 of the JSON data
+
+can you help fix this error
+
+===============================================================================
+
+Of course. You've correctly identified a subtle but common issue when passing data from a Python backend to JavaScript. The error you're seeing is the result of double-encoding the JSON data.
+
+Here is a breakdown of the problem and the complete, corrected code to fix it.
+The Cause of the Error
+
+    In app.py: You correctly used json.dumps(latest_purchases_data) to convert the Python dictionary into a JSON string.
+
+    In ingredient_form.html: The template then took this JSON string and applied Flask/Jinja2's | tojson filter to it. This filter is also designed to convert a Python object into a JSON string.
+
+The result is that you were trying to JSON-encode data that was already a JSON string. This wraps the entire string in another layer of quotes and escapes the internal quotes, leading to an invalid format that JSON.parse() cannot read, hence the "unexpected non-whitespace character" error.
+The Solution
+
+The best practice is to let Jinja's tojson filter handle the entire conversion. We will pass the raw Python dictionary to the template and let the filter create the valid JavaScript object literal directly. This avoids the need for JSON.parse() altogether.
+
+Here are the corrected files.
+
+

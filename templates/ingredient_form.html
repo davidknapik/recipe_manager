@@ -3,11 +3,11 @@
 {% block content %}
     <h1>{% if purchase %}Edit Ingredient Purchase{% else %}Add New Ingredient Purchase{% endif %}</h1>
     
+    {% if not purchase %}
     <p>
-        {% if not purchase %}
         Select an existing ingredient from the dropdown to auto-fill its last purchased details, or type a new ingredient name to create it.
-        {% endif %}
     </p>
+    {% endif %}
 
     <form method="post">
         
@@ -58,8 +58,9 @@
 {# This script only runs when adding a new purchase, not when editing one. #}
 {% if not purchase %}
 <script>
-    // Use the `tojson` filter to safely embed the JSON data
-    const latestPurchases = JSON.parse('{{ latest_purchases_json | tojson | safe }}');
+    // Let the `tojson` filter create the JavaScript object directly.
+    // This is safer and avoids JSON.parse errors.
+    const latestPurchases = {{ latest_purchases_data | tojson | safe }};
 
     // Get references to all the form elements
     const nameInput = document.getElementById('name');
@@ -93,4 +94,4 @@
 </script>
 {% endif %}
 
-{% endblock %}```
+{% endblock %}

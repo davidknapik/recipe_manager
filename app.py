@@ -435,7 +435,8 @@ def add_ingredient():
                            units=UNITS,
                            today_date=date.today().isoformat(),
                            all_ingredients=all_ingredients,
-                           latest_purchases_json=json.dumps(latest_purchases_data))
+                           # Pass the raw dictionary, NOT a JSON string
+                           latest_purchases_data=latest_purchases_data)
 
 @app.route('/ingredient/edit/<int:purchase_id>', methods=('GET', 'POST'))
 def edit_ingredient(purchase_id):
