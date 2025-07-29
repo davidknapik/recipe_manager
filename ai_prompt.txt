@@ -590,3 +590,24 @@ This version adds the "Brand/Manufacturer" column to the ingredient purchases li
 
 This version adds the "Brand/Manufacturer" input field to the form for adding and editing purchases.
 
+
+===============================================================================
+Prompt 9
+===============================================================================
+
+While going back and editing the ingredients of a recipe, I am only able to remove an item. 
+Could you please add an additional action button allowing for editing of a recipe ingredient.
+This would be helpful for not only to change the amount, but also the Ingredient itself in case I needed to provide a substitution or if a recipe changes.
+
+
+===============================================================================
+Prompt 10
+===============================================================================
+
+I really like the Edit and Remove button styles added to the recipe_detail page.
+Could you please make the following changes:
+update the 'Edit' link on the Ingredient_form to have a similar button style.
+update the 'Add New Purchase' link on the Ingredient_form to have a similar button style (with color 'green')
+update the Edit link on the recipe_detail form to have a similar button style.
+update the "Add New Recipe" on the main index to have a similar button style (with color 'green')
+

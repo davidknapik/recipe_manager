@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Edit Recipe Ingredient</h1>
+    
+    <div class="card">
+        <form method="post">
+            <label for="ingredient_id">Ingredient</label>
+            <select name="ingredient_id" id="ingredient_id" required>
+                {% for ingredient in all_ingredients %}
+                    {# Pre-select the current ingredient #}
+                    <option value="{{ ingredient.id }}" {% if ingredient.id == recipe_ingredient.ingredient_id %}selected{% endif %}>
+                        {{ ingredient.name }}
+                    </option>
+                {% endfor %}
+            </select>
+            
+            <label for="amount_needed">Amount Needed</label>
+            {# Pre-fill the current amount #}
+            <input type="number" step="any" name="amount_needed" id="amount_needed" value="{{ recipe_ingredient.amount_needed }}" required>
+            
+            <label for="unit_needed">Unit Needed</label>
+            <select name="unit_needed" id="unit_needed" required>
+                {% for abbr, full_name, dimension in units %}
+                    {# Pre-select the current unit #}
+                    <option value="{{ abbr }}" {% if abbr == recipe_ingredient.unit_needed %}selected{% endif %}>
+                        {{ full_name }}
+                    </option>
+                {% endfor %}
+            </select>
+            
+            <button type="submit">Update Ingredient</button>
+            <a href="{{ url_for('edit_recipe', recipe_id=recipe_id) }}" style="float: right; margin-top: 0.5rem;">Cancel</a>
+        </form>
+    </div>
+{% endblock %}

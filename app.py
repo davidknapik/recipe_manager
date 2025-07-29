@@ -267,6 +267,46 @@ def delete_ingredient_from_recipe(recipe_id, ingredient_id):
     flash('Ingredient removed from recipe.', 'success')
     return redirect(url_for('edit_recipe', recipe_id=recipe_id))
 
+# --- NEW ROUTE FOR EDITING A RECIPE INGREDIENT ---
+@app.route('/recipe/<int:recipe_id>/edit_ingredient/<int:ingredient_id>', methods=('GET', 'POST'))
+def edit_recipe_ingredient(recipe_id, ingredient_id):
+    db = get_db()
+
+    # On form submission, update the database
+    if request.method == 'POST':
+        new_ingredient_id = request.form['ingredient_id']
+        amount_needed = request.form['amount_needed']
+        unit_needed = request.form['unit_needed']
+
+        try:
+            db.execute('''
+                UPDATE recipe_ingredients
+                SET ingredient_id = ?, amount_needed = ?, unit_needed = ?
+                WHERE recipe_id = ? AND ingredient_id = ?
+            ''', (new_ingredient_id, amount_needed, unit_needed, recipe_id, ingredient_id))
+            db.commit()
+            flash('Recipe ingredient updated successfully!', 'success')
+        except sqlite3.IntegrityError:
+            flash('Could not update: That ingredient is already in the recipe.', 'error')
+        
+        return redirect(url_for('edit_recipe', recipe_id=recipe_id))
+
+    # For a GET request, fetch data and show the form
+    # Get the specific ingredient entry for this recipe
+    recipe_ingredient = db.execute('''
+        SELECT * FROM recipe_ingredients WHERE recipe_id = ? AND ingredient_id = ?
+    ''', (recipe_id, ingredient_id)).fetchone()
+
+    if recipe_ingredient is None:
+        flash('Recipe ingredient not found.', 'error')
+        return redirect(url_for('edit_recipe', recipe_id=recipe_id))
+
+    # Get all base ingredients to populate the dropdown for substitutions
+    all_ingredients = db.execute('SELECT * FROM ingredients ORDER BY name').fetchall()
+
+    return render_template('edit_recipe_ingredient.html', recipe_id=recipe_id,
+                           recipe_ingredient=recipe_ingredient, all_ingredients=all_ingredients, units=UNITS)
+
 # --- Base Ingredient Management Routes ---
 
 @app.route('/ingredients/base')
