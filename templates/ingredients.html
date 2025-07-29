@@ -2,8 +2,8 @@
 
 {% block content %}
   <h1>Ingredient Purchases</h1>
-  <a href="{{ url_for('add_ingredient') }}">Add New Purchase</a>
-  <hr>
+  <a href="{{ url_for('add_ingredient') }}" class="button button-green">Add New Purchase</a>
+  <hr style="margin-top: 1.2rem;">
   <table class="sortable">
       <thead>
           <tr>
@@ -36,7 +36,7 @@
               <td>{{ p.purchase_date }}</td>
               <td>{{ p.expiry_date or 'N/A' }}</td>
               <td>
-                  <a href="{{ url_for('edit_ingredient', purchase_id=p.id) }}">Edit</a>
+                  <a href="{{ url_for('edit_ingredient', purchase_id=p.id) }}" class="button button-yellow button-sm">Edit</a>
               </td>
           </tr>
           {% else %}

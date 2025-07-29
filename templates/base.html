@@ -20,13 +20,33 @@
         th { background-color: #f2f2f2; }
         form label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
         form input, form textarea, form select { width: 100%; padding: 0.5rem; margin-bottom: 1rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        .button-edit { display: inline-block; background-color: #ffc107; color: black; padding: 0.4rem 0.8rem; border-radius: 5px; text-decoration: none; margin-right: 0.5rem; font-size: 0.9rem; }
         form button { background-color: #007bff; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 5px; cursor: pointer; }
         .pagination { margin-top: 1.5rem; text-align: center; }
         .pagination a { margin: 0 0.5rem; text-decoration: none; }
         .sortable th a { text-decoration: none; color: inherit; }
         .sortable th.sorted-asc a::after { content: ' ▲'; }
         .sortable th.sorted-desc a::after { content: ' ▼'; }
+
+        /* --- Reusable Button Styles --- */
+        .button {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            text-align: center;
+        }
+        .button-green { background-color: #28a745; color: white; }
+        .button-yellow { background-color: #ffc107; color: black; }
+        
+        /* Small button variant for table actions */
+        .button-sm {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.9rem;
+        }
+
     </style>
 </head>
 <body>
