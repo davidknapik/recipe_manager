@@ -17,7 +17,8 @@
         <h3>Ingredients</h3>
         <ul>
             {% for ingredient in ingredients %}
-            <li>{{ ingredient.amount_needed }} {{ ingredient.unit_needed }} of {{ ingredient.name }}</li>
+            {# The display_grams will be either "(Xg)" or "" so it can be added safely #}
+            <li>{{ ingredient.amount_needed }} {{ ingredient.unit_needed }} {{ ingredient.display_grams }} of {{ ingredient.name }}</li>
             {% endfor %}
         </ul>
         

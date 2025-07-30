@@ -102,8 +102,22 @@ def calculate_recipe_cost(recipe_id):
             LIMIT 1
         ''', (item['name'],)).fetchone()
 
+        # --- Generate display name with gram equivalent ---
+        grams = None
+        dimension = UNIT_DIMENSIONS.get(recipe_unit)
+
+        if dimension == 'weight' and recipe_unit != 'g':
+            grams = recipe_amount * CONVERSIONS_TO_BASE[recipe_unit]
+        elif dimension == 'volume' and latest_purchase and latest_purchase['density_g_ml']:
+            base_ml = recipe_amount * CONVERSIONS_TO_BASE[recipe_unit]
+            grams = base_ml * latest_purchase['density_g_ml']
+
+        display_grams_str = f" ({round(grams)}g)" if grams is not None else ""
+        display_name = f"{recipe_amount} {recipe_unit}{display_grams_str} of {item['name']}"
+        # --- End of display name generation ---
+
         if not latest_purchase:
-            cost_breakdown.append({'name': item['name'], 'cost': 'N/A', 'note': 'No purchase history'})
+            cost_breakdown.append({'name': display_name, 'cost': 'N/A', 'note': 'No purchase history'})
             continue
 
         purchase_unit = latest_purchase['package_unit']
@@ -154,7 +168,7 @@ def calculate_recipe_cost(recipe_id):
         
         total_cost += ingredient_cost
         cost_breakdown.append({
-            'name': f"{item['amount_needed']} {recipe_unit} of {item['name']}",
+            'name': display_name,
             'cost': f'{ingredient_cost:.2f}',
             'note': cost_note
         })
@@ -173,14 +187,45 @@ def index():
 def recipe_detail(recipe_id):
     db = get_db()
     recipe = db.execute('SELECT * FROM recipes WHERE id = ?', (recipe_id,)).fetchone()
-    ingredients = db.execute('''
-        SELECT i.name, ri.amount_needed, ri.unit_needed
+    
+    # Fetch ingredients along with their density for gram calculation
+    ingredients_raw = db.execute('''
+        SELECT i.name, i.density_g_ml, ri.amount_needed, ri.unit_needed
         FROM recipe_ingredients ri
         JOIN ingredients i ON ri.ingredient_id = i.id
         WHERE ri.recipe_id = ?
     ''', (recipe_id,)).fetchall()
+
+    # Process ingredients to add a display field for the gram equivalent
+    ingredients_processed = []
+    for item in ingredients_raw:
+        item_dict = dict(item) # Convert Row object to a mutable dict
+        unit = item_dict['unit_needed']
+        amount = item_dict['amount_needed']
+        density = item_dict['density_g_ml']
+        dimension = UNIT_DIMENSIONS.get(unit)
+        
+        grams = None # Default to no gram display
+        
+        if dimension == 'weight' and unit != 'g':
+            grams = amount * CONVERSIONS_TO_BASE.get(unit, 0)
+        elif dimension == 'volume' and density:
+            base_ml = amount * CONVERSIONS_TO_BASE.get(unit, 0)
+            grams = base_ml * density
+            
+        if grams is not None:
+            # Add a formatted string to the dictionary for the template
+            item_dict['display_grams'] = f"({round(grams)}g)"
+        else:
+            item_dict['display_grams'] = "" # Keep it empty if no conversion
+            
+        ingredients_processed.append(item_dict)
+
     cost_info = calculate_recipe_cost(recipe_id)
-    return render_template('recipe_detail.html', recipe=recipe, ingredients=ingredients, cost_info=cost_info)
+    return render_template('recipe_detail.html', 
+                           recipe=recipe, 
+                           ingredients=ingredients_processed, 
+                           cost_info=cost_info)
 
 @app.route('/recipe/add', methods=('GET', 'POST'))
 def add_recipe():
