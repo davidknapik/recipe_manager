@@ -238,6 +238,23 @@ def edit_recipe(recipe_id):
                            all_ingredients=all_ingredients,
                            units=UNITS)
 
+@app.route('/recipe/delete/<int:recipe_id>', methods=('POST',))
+def delete_recipe(recipe_id):
+    """Deletes a recipe and its associated ingredients from the database."""
+    db = get_db()
+    
+    # First, delete the links in the recipe_ingredients table
+    db.execute('DELETE FROM recipe_ingredients WHERE recipe_id = ?', (recipe_id,))
+    
+    # Then, delete the recipe itself
+    db.execute('DELETE FROM recipes WHERE id = ?', (recipe_id,))
+    
+    db.commit()
+    
+    flash('Recipe has been deleted successfully.', 'success')
+    return redirect(url_for('index'))
+
+
 @app.route('/recipe/<int:recipe_id>/add_ingredient', methods=('POST',))
 def add_ingredient_to_recipe(recipe_id):
     db = get_db()

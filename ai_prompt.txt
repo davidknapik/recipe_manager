@@ -651,3 +651,51 @@ The best practice is to let Jinja's tojson filter handle the entire conversion. 
 Here are the corrected files.
 
 
+===============================================================================
+Prompt 13
+===============================================================================
+
+I would like to add the ability to remove a recipe from the database. 
+It looks like this will affect both the recipes and recipe_ingredients tables.
+Could you please add a button on the recipe_detail.html page to the right of the existing 'Edit Recipe' button?
+The button action should also prompt "Are you sure?" to keep from accedental button clicks.
+
+===============================================================================
+
+Of course. This is a crucial feature for managing your recipe collection. Implementing this requires adding a new route in app.py to handle the database operations and a corresponding "Delete" button in the recipe_detail.html template.
+
+You are correct that this operation needs to affect both the recipes and recipe_ingredients tables to maintain database integrity.
+
+Here are the complete, updated files with the new functionality.
+Summary of Changes:
+
+    app.py:
+
+        A new route, @app.route('/recipe/delete/<int:recipe_id>'), has been added.
+
+        This function first deletes all entries for the recipe from the recipe_ingredients linking table.
+
+        It then deletes the recipe itself from the recipes table.
+
+        The user is then redirected to the homepage with a success message.
+
+    templates/recipe_detail.html:
+
+        A "Delete Recipe" button is added next to the "Edit Recipe" button.
+
+        This button is styled in red to indicate a destructive action.
+
+        It is placed within a form that submits a POST request to the new delete route.
+
+        Crucially, it includes an onclick JavaScript confirmation dialog to prevent accidental deletions.
+
+    templates/base.html:
+
+        A new CSS class, .button-red, has been added to provide a consistent style for all delete/remove buttons.
+
+    templates/recipe_form.html:
+
+        The "Remove" button for individual ingredients has been updated to use the new .button-red style for UI consistency.
+
+
+===============================================================================

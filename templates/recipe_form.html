@@ -46,7 +46,7 @@
                     <td>
                         <a href="{{ url_for('edit_recipe_ingredient', recipe_id=recipe.id, ingredient_id=item.id) }}" class="button button-yellow button-sm" style="margin-right: 0.5rem;">Edit</a>
                         <form action="{{ url_for('delete_ingredient_from_recipe', recipe_id=recipe.id, ingredient_id=item.id) }}" method="post" style="display: inline;">
-                            <button type="submit" onclick="return confirm('Are you sure you want to remove this ingredient?');" style="background-color: #dc3545;">Remove</button>
+                            <button type="submit" onclick="return confirm('Are you sure you want to remove this ingredient?');" class="button button-red button-sm">Remove</button>
                         </form>
                     </td>
                 </tr>
