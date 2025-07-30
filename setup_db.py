@@ -1,4 +1,22 @@
 # setup_db.py
+
+###############################################################################
+# Dump table schema
+###############################################################################
+# import sqlite3
+#
+# conn = sqlite3.connect('recipes.db')
+# cursor = conn.cursor()
+#
+# res = conn.execute("SELECT * FROM sqlite_master where type='table'")
+# 
+# for y in res:
+#      print(y)
+#
+#  conn.commit()
+# conn.close()
+###############################################################################
+
 import sqlite3
 
 conn = sqlite3.connect('recipes.db')
@@ -44,6 +62,7 @@ CREATE TABLE IF NOT EXISTS recipe_ingredients (
     ingredient_id INTEGER NOT NULL,
     amount_needed REAL NOT NULL,
     unit_needed TEXT NOT NULL,
+    sort_order INTEGER NOT NULL,
     PRIMARY KEY (recipe_id, ingredient_id),
     FOREIGN KEY (recipe_id) REFERENCES recipes (id),
     FOREIGN KEY (ingredient_id) REFERENCES ingredients (id)

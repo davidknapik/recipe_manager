@@ -85,6 +85,7 @@ def calculate_recipe_cost(recipe_id):
         -- Also fetch the ingredient's ID and density
         JOIN ingredients i ON ri.ingredient_id = i.id 
         WHERE ri.recipe_id = ?
+        ORDER BY ri.sort_order
     ''', (recipe_id,)).fetchall()
 
     total_cost = 0.0
@@ -188,12 +189,13 @@ def recipe_detail(recipe_id):
     db = get_db()
     recipe = db.execute('SELECT * FROM recipes WHERE id = ?', (recipe_id,)).fetchone()
     
-    # Fetch ingredients along with their density for gram calculation
+    # Fetch ingredients along with their density for gram calculation, ORDERED by sort_order
     ingredients_raw = db.execute('''
         SELECT i.name, i.density_g_ml, ri.amount_needed, ri.unit_needed
         FROM recipe_ingredients ri
         JOIN ingredients i ON ri.ingredient_id = i.id
         WHERE ri.recipe_id = ?
+        ORDER BY ri.sort_order
     ''', (recipe_id,)).fetchall()
 
     # Process ingredients to add a display field for the gram equivalent
@@ -260,6 +262,7 @@ def edit_recipe(recipe_id):
     recipe = db.execute('SELECT * FROM recipes WHERE id = ?', (recipe_id,)).fetchone()
 
     if request.method == 'POST':
+        # This part handles updating the recipe's own details
         name = request.form['name']
         prep = request.form['preparation_instructions']
         bake = request.form['bake_instructions']
@@ -276,11 +279,12 @@ def edit_recipe(recipe_id):
             flash('Recipe details updated successfully!', 'success')
             return redirect(url_for('edit_recipe', recipe_id=recipe_id))
 
+    # Fetch ingredients ORDERED by their sort_order
     recipe_ingredients = db.execute('''
-        SELECT i.id, i.name, ri.amount_needed, ri.unit_needed
+        SELECT i.id, i.name, ri.amount_needed, ri.unit_needed, ri.sort_order
         FROM recipe_ingredients ri
         JOIN ingredients i ON ri.ingredient_id = i.id
-        WHERE ri.recipe_id = ? ORDER BY i.name
+        WHERE ri.recipe_id = ? ORDER BY ri.sort_order
     ''', (recipe_id,)).fetchall()
 
     all_ingredients = db.execute('SELECT * FROM ingredients ORDER BY name').fetchall()
@@ -319,16 +323,75 @@ def add_ingredient_to_recipe(recipe_id):
         flash('All ingredient fields are required.', 'error')
     else:
         try:
+            # --- NEW: Calculate the next sort_order ---
+            # COALESCE ensures we get 0 if there are no ingredients yet.
+            max_order_result = db.execute(
+                'SELECT COALESCE(MAX(sort_order), 0) FROM recipe_ingredients WHERE recipe_id = ?', 
+                (recipe_id,)
+            ).fetchone()
+            next_order = max_order_result[0] + 1
+            
+            # Insert with the new sort_order
             db.execute('''
-                INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount_needed, unit_needed)
-                VALUES (?, ?, ?, ?)
-            ''', (recipe_id, int(ingredient_id), float(amount), unit))
+                INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount_needed, unit_needed, sort_order)
+                VALUES (?, ?, ?, ?, ?)
+            ''', (recipe_id, int(ingredient_id), float(amount), unit, next_order))
             db.commit()
             flash('Ingredient added to recipe.', 'success')
         except sqlite3.IntegrityError:
             flash('This ingredient is already in the recipe.', 'error')
 
     return redirect(url_for('edit_recipe', recipe_id=recipe_id))
+
+# --- NEW: Routes for reordering ingredients ---
+@app.route('/recipe/<int:recipe_id>/move_ingredient/<int:ingredient_id>/<direction>', methods=('POST',))
+def move_ingredient(recipe_id, ingredient_id, direction):
+    """Handles moving an ingredient up or down in the list."""
+    db = get_db()
+
+    # Get the item we want to move
+    current_item = db.execute('SELECT * FROM recipe_ingredients WHERE recipe_id = ? AND ingredient_id = ?', 
+                              (recipe_id, ingredient_id)).fetchone()
+    if not current_item:
+        flash('Ingredient not found in recipe.', 'error')
+        return redirect(url_for('edit_recipe', recipe_id=recipe_id))
+
+    current_sort_order = current_item['sort_order']
+    
+    # Determine the target item to swap with
+    if direction == 'up':
+        # Find the item with the highest sort_order that is *less than* the current one
+        swap_item = db.execute('''
+            SELECT * FROM recipe_ingredients WHERE recipe_id = ? AND sort_order < ?
+            ORDER BY sort_order DESC LIMIT 1
+        ''', (recipe_id, current_sort_order)).fetchone()
+    elif direction == 'down':
+        # Find the item with the lowest sort_order that is *greater than* the current one
+        swap_item = db.execute('''
+            SELECT * FROM recipe_ingredients WHERE recipe_id = ? AND sort_order > ?
+            ORDER BY sort_order ASC LIMIT 1
+        ''', (recipe_id, current_sort_order)).fetchone()
+    else:
+        flash('Invalid move direction.', 'error')
+        return redirect(url_for('edit_recipe', recipe_id=recipe_id))
+
+    # If a swap partner was found, perform the swap
+    if swap_item:
+        swap_sort_order = swap_item['sort_order']
+        
+        # Update the target item to have the current item's order
+        db.execute('UPDATE recipe_ingredients SET sort_order = ? WHERE recipe_id = ? AND ingredient_id = ?',
+                   (current_sort_order, recipe_id, swap_item['ingredient_id']))
+                   
+        # Update the current item to have the target item's order
+        db.execute('UPDATE recipe_ingredients SET sort_order = ? WHERE recipe_id = ? AND ingredient_id = ?',
+                   (swap_sort_order, recipe_id, current_item['ingredient_id']))
+                   
+        db.commit()
+        flash('Ingredient order updated.', 'success')
+
+    return redirect(url_for('edit_recipe', recipe_id=recipe_id))
+
 
 @app.route('/recipe/<int:recipe_id>/delete_ingredient/<int:ingredient_id>', methods=('POST',))
 def delete_ingredient_from_recipe(recipe_id, ingredient_id):

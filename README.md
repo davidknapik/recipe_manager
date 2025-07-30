@@ -126,6 +126,7 @@ The application uses four SQL tables to organize data.
 |---|---|---|
 | `id` | INTEGER | Primary Key |
 | `name` | TEXT | Unique name of the ingredient (e.g., "All-Purpose Flour") |
+| `density_g_ml` | REAL | Density of ingredient in g / ml |
 
 **`ingredient_purchases`**
 | Column | Type | Description |
@@ -138,6 +139,7 @@ The application uses four SQL tables to organize data.
 | `price` | REAL | Cost of the package |
 | `purchase_date` | TEXT | Date of purchase ("YYYY-MM-DD") |
 | `expiry_date` | TEXT | Expiration date ("YYYY-MM-DD") |
+| `brand` | TEXT | Manufacturer Name / Brand Name of product |
 
 **`recipes`**
 | Column | Type | Description |
@@ -155,6 +157,7 @@ The application uses four SQL tables to organize data.
 | `ingredient_id` | INTEGER | Foreign Key to `ingredients.id` |
 | `amount_needed` | REAL | Amount of ingredient required |
 | `unit_needed` | TEXT | Unit for the recipe (e.g., "g", "ml", "Cup")|
+| `sort-order` | INTEGER | Sort order to be used in the recipe |
 
 ## Future Enhancements
 

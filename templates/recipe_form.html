@@ -35,6 +35,7 @@
                 <tr>
                     <th>Ingredient</th>
                     <th>Amount</th>
+                    <th>Order</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -43,6 +44,22 @@
                 <tr>
                     <td>{{ item.name }}</td>
                     <td>{{ item.amount_needed }} {{ item.unit_needed }}</td>
+                    <td style="white-space: nowrap;">
+                        {# --- NEW: Reordering Buttons --- #}
+                        {# Hide 'Up' arrow for the first item #}
+                        {% if not loop.first %}
+                        <form action="{{ url_for('move_ingredient', recipe_id=recipe.id, ingredient_id=item.id, direction='up') }}" method="post" style="display: inline;">
+                            <button type="submit" class="button button-sm" style="padding: 0.2rem 0.5rem; font-size: 1rem;">▲</button> {# Up Arrow #}
+                        </form>
+                        {% endif %}
+
+                        {# Hide 'Down' arrow for the last item #}
+                        {% if not loop.last %}
+                        <form action="{{ url_for('move_ingredient', recipe_id=recipe.id, ingredient_id=item.id, direction='down') }}" method="post" style="display: inline;">
+                            <button type="submit" class="button button-sm" style="padding: 0.2rem 0.5rem; font-size: 1rem;">▼</button> {# Down Arrow #}
+                        </form>
+                        {% endif %}
+                    </td>
                     <td>
                         <a href="{{ url_for('edit_recipe_ingredient', recipe_id=recipe.id, ingredient_id=item.id) }}" class="button button-yellow button-sm" style="margin-right: 0.5rem;">Edit</a>
                         <form action="{{ url_for('delete_ingredient_from_recipe', recipe_id=recipe.id, ingredient_id=item.id) }}" method="post" style="display: inline;">
@@ -52,7 +69,7 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="3">No ingredients have been added to this recipe yet.</td>
+                    <td colspan="4">No ingredients have been added to this recipe yet.</td>
                 </tr>
                 {% endfor %}
             </tbody>
